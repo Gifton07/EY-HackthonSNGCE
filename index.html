@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureFinance - AI Personal Loan Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-dark: #3730A3;
+            --primary-light: #818CF8;
+            --secondary: #06B6D4;
+            --secondary-dark: #0891B2;
+            --accent: #F59E0B;
+            --accent-light: #FCD34D;
+            --success: #10B981;
+            --success-light: #D1FAE5;
+            --warning: #F59E0B;
+            --warning-light: #FEF3C7;
+            --error: #EF4444;
+            --error-light: #FEE2E2;
+            --purple: #8B5CF6;
+            --pink: #EC4899;
+            --teal: #14B8A6;
+            --orange: #F97316;
+            --bg-dark: #0F172A;
+            --bg-medium: #1E293B;
+            --bg-light: #334155;
+            --bg-card: #1E293B;
+            --text-white: #FFFFFF;
+            --text-light: #E2E8F0;
+            --text-muted: #94A3B8;
+            --text-dark: #0F172A;
+            --border: #475569;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .bg-animation .circle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .bg-animation .circle:nth-child(1) {
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            top: -200px;
+            left: -200px;
+            animation-delay: 0s;
+        }
+
+        .bg-animation .circle:nth-child(2) {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, var(--secondary), var(--teal));
+            bottom: -150px;
+            right: -150px;
+            animation-delay: -5s;
+        }
+
+        .bg-animation .circle:nth-child(3) {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, var(--pink), var(--orange));
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 30px) scale(0.95); }
+            75% { transform: translate(30px, 50px) scale(1.05); }
+        }
+
+        /* Main Layout - Full Screen */
+        .app-layout {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        .brand-logo {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.4);
+        }
+
+        .brand-logo i {
+            font-size: 26px;
+            color: white;
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-white);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Progress Steps - Vertical */
+        .progress-vertical {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .progress-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 12px;
+            background: transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .step-item::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 100%;
+            width: 2px;
+            height: 8px;
+            background: var(--border);
+        }
+
+        .step-item:last-child::before {
+            display: none;
+        }
+
+        .step-item.active {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .step-item.completed {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .step-item.completed::before {
+            background: var(--success);
+        }
+
+        .step-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-light);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-circle {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.5);
+        }
+
+        .step-item.completed .step-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .step-content h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .step-content p {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .step-item.active .step-content h4 {
+            color: var(--text-white);
+        }
+
+        /* Sidebar Stats */
+        .sidebar-stats {
+            margin-top: auto;
+            padding-top: 24px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+        }
+
+        .stat-card h5 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 8px;
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        /* Main Chat Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 32px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 8px 16px;
+            border-radius: 24px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .status-badge .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .security-badges {
+            display: flex;
+            gap: 8px;
+        }
+
+        .badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text-light);
+        }
+
+        .badge i {
+            font-size: 14px;
+        }
+
+        .badge.ssl i { color: var(--success); }
+        .badge.rbi i { color: var(--accent); }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        /* Messages */
+        .message-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            animation: slideIn 0.3s ease-out;
+            max-width: 70%;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-group.bot { align-self: flex-start; }
+        .message-group.user { align-self: flex-end; }
+
+        .message-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .message-group.user .message-row {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 16px;
+        }
+
+        .bot .avatar {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+        }
+
+        .user .avatar {
+            background: linear-gradient(135deg, var(--secondary), var(--teal));
+            color: white;
+            box-shadow: 0 4px 16px rgba(6, 182, 212, 0.4);
+        }
+
+        .message-bubble {
+            padding: 14px 18px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .bot .message-bubble {
+            background: var(--bg-card);
+            color: var(--text-light);
+            border: 1px solid var(--glass-border);
+            border-bottom-left-radius: 4px;
+        }
+
+        .user .message-bubble {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.3);
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message-group:hover .message-time {
+            opacity: 1;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .typing-bubble {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            padding: 16px 20px;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            animation: typingBounce 1.4s ease-in-out infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        /* Cards */
+        .inline-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 8px;
+            max-width: 380px;
+        }
+
+        .card-header {
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .card-header.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(20, 184, 166, 0.2));
+            border-bottom: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .card-header.warning {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(249, 115, 22, 0.2));
+            border-bottom: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .card-header.error {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(236, 72, 153, 0.2));
+            border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .card-header.info {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(139, 92, 246, 0.2));
+            border-bottom: 1px solid rgba(79, 70, 229, 0.3);
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .card-header.success .card-icon {
+            background: linear-gradient(135deg, var(--success), var(--teal));
+            color: white;
+        }
+
+        .card-header.warning .card-icon {
+            background: linear-gradient(135deg, var(--warning), var(--orange));
+            color: white;
+        }
+
+        .card-header.error .card-icon {
+            background: linear-gradient(135deg, var(--error), var(--pink));
+            color: white;
+        }
+
+        .card-header.info .card-icon {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+        }
+
+        .card-title h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .card-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .card-row:last-child { border-bottom: none; }
+
+        .card-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .card-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+
+        .card-value.highlight {
+            font-size: 18px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--success), var(--teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-actions {
+            padding: 0 20px 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        /* Summary Card */
+        .summary-card {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            margin-top: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+        }
+
+        .summary-card h5 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            position: relative;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-item .value {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .summary-item .label {
+            font-size: 11px;
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            color: var(--text-light);
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .action-btn:hover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border: none;
+            color: white;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+        }
+
+        .action-btn.primary:hover {
+            box-shadow: 0 6px 24px rgba(79, 70, 229, 0.6);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            box-shadow: 0 4px 16px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(79, 70, 229, 0.6);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), var(--teal));
+            color: white;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(16, 185, 129, 0.6);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-light);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary-light);
+        }
+
+        /* Upload Area */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+            background: rgba(79, 70, 229, 0.05);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.15);
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-size: 28px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(79, 70, 229, 0.4);
+        }
+
+        .upload-area h4 {
+            font-size: 16px;
+            color: var(--text-white);
+            margin-bottom: 6px;
+        }
+
+        .upload-area p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* Doc Card */
+        .doc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .doc-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .doc-info { flex: 1; }
+
+        .doc-info h5 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+
+        .doc-info p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .doc-status {
+            font-size: 20px;
+        }
+
+        .doc-status.success { color: var(--success); }
+        .doc-status.pending { color: var(--accent); }
+
+        /* OCR Card */
+        .ocr-card {
+            background: rgba(79, 70, 229, 0.1);
+            border: 1px solid rgba(79, 70, 229, 0.2);
+            border-radius: 12px;
+            padding: 14px;
+            margin-top: 10px;
+        }
+
+        .ocr-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--primary-light);
+        }
+
+        .ocr-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+        }
+
+        .ocr-field { color: var(--text-muted); }
+
+        .ocr-value {
+            font-weight: 500;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ocr-value .match { color: var(--success); }
+        .ocr-value .mismatch { color: var(--error); }
+
+        /* Loading Card */
+        .loading-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-card h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-white);
+            margin-bottom: 6px;
+        }
+
+        .loading-card p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .loading-steps {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .loading-step {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .loading-step.completed { color: var(--success); }
+        .loading-step.active { color: var(--primary-light); font-weight: 500; }
+
+        .loading-step i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .error-message i { color: var(--error); margin-top: 2px; }
+
+        .error-message .content h5 {
+            font-size: 14px;
+            color: var(--error);
+            margin-bottom: 4px;
+        }
+
+        .error-message .content p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px 32px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 28px;
+            padding: 6px 8px 6px 24px;
+            transition: all 0.2s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .input-wrapper input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            color: var(--text-white);
+            outline: none;
+            font-family: inherit;
+        }
+
+        .input-wrapper input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .attach-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 18px;
+        }
+
+        .attach-btn:hover {
+            color: var(--primary-light);
+            background: rgba(79, 70, 229, 0.1);
+        }
+
+        .send-btn {
+            width: 52px;
+            height: 52px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.5);
+            font-size: 18px;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 28px rgba(79, 70, 229, 0.7);
+        }
+
+        .send-btn:disabled {
+            background: var(--border);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 900px) {
+            .sidebar {
+                display: none;
+            }
+
+            .app-layout {
+                flex-direction: column;
+            }
+
+            .top-bar {
+                padding: 12px 16px;
+            }
+
+            .chat-container {
+                padding: 16px;
+            }
+
+            .input-area {
+                padding: 16px;
+            }
+
+            .message-group {
+                max-width: 90%;
+            }
+
+            .security-badges {
+                display: none;
+            }
+        }
+
+        /* Mobile Progress Bar */
+        @media (max-width: 900px) {
+            .mobile-progress {
+                display: flex;
+                padding: 12px 16px;
+                background: var(--glass);
+                border-bottom: 1px solid var(--glass-border);
+                gap: 8px;
+                align-items: center;
+            }
+
+            .mobile-progress .step-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: var(--border);
+            }
+
+            .mobile-progress .step-dot.active {
+                background: var(--primary);
+                box-shadow: 0 0 10px var(--primary);
+            }
+
+            .mobile-progress .step-dot.completed {
+                background: var(--success);
+            }
+
+            .mobile-progress .step-line {
+                flex: 1;
+                height: 2px;
+                background: var(--border);
+            }
+
+            .mobile-progress .step-line.completed {
+                background: var(--success);
+            }
+        }
+
+        @media (min-width: 901px) {
+            .mobile-progress {
+                display: none;
+            }
+        }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-animation">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <i class="fas fa-landmark"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>SecureFinance</h1>
+                    <p>AI Loan Assistant</p>
+                </div>
+            </div>
+
+            <div class="progress-vertical">
+                <div class="progress-title">Application Progress</div>
+                
+                <div class="step-item active" data-step="1">
+                    <div class="step-circle">1</div>
+                    <div class="step-content">
+                        <h4>Basic Details</h4>
+                        <p>Name, contact info</p>
+                    </div>
+                </div>
+
+                <div class="step-item" data-step="2">
+                    <div class="step-circle">2</div>
+                    <div class="step-content">
+                        <h4>Eligibility Check</h4>
+                        <p>Income & loan details</p>
+                    </div>
+                </div>
+
+                <div class="step-item" data-step="3">
+                    <div class="step-circle">3</div>
+                    <div class="step-content">
+                        <h4>Document Verification</h4>
+                        <p>KYC & income proof</p>
+                    </div>
+                </div>
+
+                <div class="step-item" data-step="4">
+                    <div class="step-circle">4</div>
+                    <div class="step-content">
+                        <h4>Credit & Underwriting</h4>
+                        <p>Bureau check</p>
+                    </div>
+                </div>
+
+                <div class="step-item" data-step="5">
+                    <div class="step-circle">5</div>
+                    <div class="step-content">
+                        <h4>Decision & Sanction</h4>
+                        <p>Final approval</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-stats">
+                <div class="stat-card">
+                    <h5>Quick Stats</h5>
+                    <div class="value">₹25L</div>
+                    <div class="label">Max Loan Available</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <div class="status-badge">
+                        <span class="dot"></span>
+                        AI Assistant Online
+                    </div>
+                </div>
+                <div class="top-bar-right">
+                    <div class="security-badges">
+                        <span class="badge ssl"><i class="fas fa-shield-halved"></i> 256-bit SSL</span>
+                        <span class="badge rbi"><i class="fas fa-certificate"></i> RBI Registered</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Progress -->
+            <div class="mobile-progress" id="mobileProgress">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-line"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-line"></div>
+                <div class="step-dot" data-step="3"></div>
+                <div class="step-line"></div>
+                <div class="step-dot" data-step="4"></div>
+                <div class="step-line"></div>
+                <div class="step-dot" data-step="5"></div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="chat-container" id="chatArea"></div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-row">
+                    <div class="input-wrapper">
+                        <input type="text" id="userInput" placeholder="Type your message..." autocomplete="off">
+                        <button class="attach-btn" id="attachBtn" title="Upload Document">
+                            <i class="fas fa-paperclip"></i>
+                        </button>
+                    </div>
+                    <button class="send-btn" id="sendBtn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ==================== APPLICATION STATE ====================
+        const AppState = {
+            currentStep: 1,
+            conversationStage: 'init',
+            isProcessing: false,
+            user: { name: '', mobile: '', email: '', employmentType: '' },
+            loan: { income: 0, amount: 0, tenure: 0 },
+            documents: { pan: null, aadhaar: null, income: null },
+            ocr: { panName: '', panNumber: '', aadhaarName: '', aadhaarNumber: '', extractedIncome: 0 },
+            credit: { score: 0, riskBand: '' },
+            decision: { status: '', approvedAmount: 0, interestRate: 0, emi: 0, reason: '' }
+        };
+
+        // ==================== DOM ELEMENTS ====================
+        const chatArea = document.getElementById('chatArea');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const attachBtn = document.getElementById('attachBtn');
+
+        // ==================== ELIGIBILITY RULES ====================
+        const EligibilityRules = {
+            minIncome: 25000,
+            maxLoanMultiplier: 15,
+            checkEligibility(income, loanAmount) {
+                const maxLoan = income * this.maxLoanMultiplier;
+                if (income < this.minIncome) {
+                    return { eligible: false, reason: `Monthly income must be at least ₹${this.minIncome.toLocaleString('en-IN')}` };
+                }
+                if (loanAmount > maxLoan) {
+                    return { eligible: false, reason: `Maximum eligible: ₹${maxLoan.toLocaleString('en-IN')} (15× income)` };
+                }
+                return { eligible: true, maxLoan };
+            }
+        };
+
+        // ==================== MOCK API ====================
+        const MockAPI = {
+            delay: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
+            async checkEligibility(income, loanAmount) {
+                await this.delay(1000);
+                return EligibilityRules.checkEligibility(income, loanAmount);
+            },
+            async uploadDocument(docType) {
+                await this.delay(1200);
+                return {
+                    success: true,
+                    data: {
+                        pan: { name: AppState.user.name.toUpperCase(), number: 'ABCPK' + Math.floor(1000 + Math.random() * 9000) + 'M' },
+                        aadhaar: { name: AppState.user.name.toUpperCase(), number: 'XXXX-XXXX-' + Math.floor(1000 + Math.random() * 9000) },
+                        income: { extractedIncome: AppState.loan.income }
+                    }[docType]
+                };
+            },
+            async getCreditScore() {
+                await this.delay(1500);
+                const score = Math.floor(680 + Math.random() * 170);
+                return { score, riskBand: score >= 750 ? 'LOW' : score >= 650 ? 'MEDIUM' : 'HIGH' };
+            },
+            async runUnderwriting(credit, loan) {
+                await this.delay(2000);
+                if (credit.riskBand === 'HIGH') {
+                    return { success: false, reason: 'Credit score below threshold' };
+                }
+                const rate = credit.riskBand === 'LOW' ? 10.5 : 12.5;
+                const emi = this.calculateEMI(loan.amount, rate, loan.tenure);
+                return { success: true, approvedAmount: loan.amount, interestRate: rate, tenure: loan.tenure, emi, processingFee: Math.round(loan.amount * 0.02) };
+            },
+            calculateEMI(principal, rate, months) {
+                const r = rate / 12 / 100;
+                return Math.round(principal * r * Math.pow(1 + r, months) / (Math.pow(1 + r, months) - 1));
+            }
+        };
+
+        // ==================== UI HELPERS ====================
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+
+        function scrollToBottom() {
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function updateProgress(step) {
+            AppState.currentStep = step;
+            
+            // Desktop sidebar
+            document.querySelectorAll('.step-item').forEach((el, i) => {
+                el.classList.remove('active', 'completed');
+                const n = i + 1;
+                if (n < step) {
+                    el.classList.add('completed');
+                    el.querySelector('.step-circle').innerHTML = '<i class="fas fa-check"></i>';
+                } else if (n === step) {
+                    el.classList.add('active');
+                }
+            });
+
+            // Mobile progress
+            document.querySelectorAll('.mobile-progress .step-dot').forEach((el, i) => {
+                el.classList.remove('active', 'completed');
+                const n = i + 1;
+                if (n < step) el.classList.add('completed');
+                else if (n === step) el.classList.add('active');
+            });
+            document.querySelectorAll('.mobile-progress .step-line').forEach((el, i) => {
+                el.classList.toggle('completed', i + 1 < step);
+            });
+        }
+
+        function maskPAN(pan) { return pan ? pan.substring(0, 5) + '****' + pan.substring(9) : ''; }
+
+        // ==================== MESSAGE RENDERING ====================
+        function addBotMessage(content, delay = 0) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const group = document.createElement('div');
+                    group.className = 'message-group bot';
+                    group.innerHTML = `
+                        <div class="message-row">
+                            <div class="avatar"><i class="fas fa-robot"></i></div>
+                            <div class="message-bubble">${content}</div>
+                        </div>
+                        <div class="message-time">${getCurrentTime()}</div>
+                    `;
+                    chatArea.appendChild(group);
+                    scrollToBottom();
+                    resolve();
+                }, delay);
+            });
+        }
+
+        function addUserMessage(content) {
+            const group = document.createElement('div');
+            group.className = 'message-group user';
+            group.innerHTML = `
+                <div class="message-row">
+                    <div class="avatar"><i class="fas fa-user"></i></div>
+                    <div class="message-bubble">${content}</div>
+                </div>
+                <div class="message-time">${getCurrentTime()}</div>
+            `;
+            chatArea.appendChild(group);
+            scrollToBottom();
+        }
+
+        function addBotContent(html) {
+            const group = document.createElement('div');
+            group.className = 'message-group bot';
+            group.innerHTML = `
+                <div class="message-row">
+                    <div class="avatar"><i class="fas fa-robot"></i></div>
+                    <div style="flex: 1; max-width: calc(100% - 52px);">${html}</div>
+                </div>
+            `;
+            chatArea.appendChild(group);
+            scrollToBottom();
+        }
+
+        function showTyping() {
+            const el = document.createElement('div');
+            el.className = 'typing-indicator';
+            el.id = 'typingIndicator';
+            el.innerHTML = `
+                <div class="avatar"><i class="fas fa-robot"></i></div>
+                <div class="typing-bubble">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatArea.appendChild(el);
+            scrollToBottom();
+        }
+
+        function hideTyping() {
+            document.getElementById('typingIndicator')?.remove();
+        }
+
+        // ==================== CONVERSATION FLOW ====================
+        async function startConversation() {
+            await addBotMessage("Hi 👋 I'm your <span class='text-gradient' style='font-weight:700'>AI Loan Assistant</span>");
+            await addBotMessage("I'll help you check eligibility and get <strong>instant approval</strong>. Takes less than 5 minutes!", 500);
+            await addBotMessage("Let's start! What's your <strong>full name</strong> (as per PAN card)?", 700);
+            AppState.conversationStage = 'name';
+        }
+
+        async function handleUserInput(input) {
+            if (AppState.isProcessing || !input.trim()) return;
+            AppState.isProcessing = true;
+            addUserMessage(input.trim());
+            userInput.value = '';
+            showTyping();
+            await MockAPI.delay(500);
+            hideTyping();
+            await processStage(input.trim());
+            AppState.isProcessing = false;
+        }
+
+        async function processStage(input) {
+            switch (AppState.conversationStage) {
+                case 'name':
+                    AppState.user.name = input;
+                    await addBotMessage(`Great to meet you, <strong>${input.split(' ')[0]}</strong>! 🎉`);
+                    await addBotMessage("Enter your <strong>10-digit mobile</strong> number:", 300);
+                    AppState.conversationStage = 'mobile';
+                    break;
+
+                case 'mobile':
+                    if (!/^\d{10}$/.test(input.replace(/\D/g, ''))) {
+                        await addBotMessage("Please enter a valid 10-digit mobile number.");
+                        return;
+                    }
+                    AppState.user.mobile = input.replace(/\D/g, '');
+                    await addBotMessage("✅ OTP verified!");
+                    await addBotMessage("What's your <strong>email address</strong>?", 300);
+                    AppState.conversationStage = 'email';
+                    break;
+
+                case 'email':
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input)) {
+                        await addBotMessage("Please enter a valid email.");
+                        return;
+                    }
+                    AppState.user.email = input;
+                    await addBotMessage("What's your <strong>employment type</strong>?", 200);
+                    showEmploymentOptions();
+                    AppState.conversationStage = 'employment';
+                    break;
+
+                case 'employment':
+                    AppState.user.employmentType = input;
+                    updateProgress(2);
+                    await addBotMessage("Perfect! Let's check eligibility 📊");
+                    await addBotMessage("What's your <strong>monthly income</strong>? (₹)", 400);
+                    AppState.conversationStage = 'income';
+                    break;
+
+                case 'income':
+                    const income = parseInt(input.replace(/\D/g, ''));
+                    if (isNaN(income) || income < 10000) {
+                        await addBotMessage("Please enter a valid income amount.");
+                        return;
+                    }
+                    AppState.loan.income = income;
+                    await addBotMessage(`How much <strong>loan</strong> do you need?<br><small style="color:var(--text-muted)">Range: ₹50,000 - ₹25,00,000</small>`);
+                    AppState.conversationStage = 'loanAmount';
+                    break;
+
+                case 'loanAmount':
+                    const amount = parseInt(input.replace(/\D/g, ''));
+                    if (isNaN(amount) || amount < 50000 || amount > 2500000) {
+                        await addBotMessage("Enter amount between ₹50,000 - ₹25,00,000");
+                        return;
+                    }
+                    AppState.loan.amount = amount;
+                    await addBotMessage("Select <strong>tenure</strong>:");
+                    showTenureOptions();
+                    AppState.conversationStage = 'tenure';
+                    break;
+
+                case 'tenure':
+                    AppState.loan.tenure = parseInt(input);
+                    await showLoanSummary();
+                    await checkEligibility();
+                    break;
+
+                case 'documents':
+                    await addBotMessage("Use the 📎 button to upload documents.");
+                    break;
+            }
+        }
+
+        // ==================== UI COMPONENTS ====================
+        function showEmploymentOptions() {
+            const opts = [
+                { icon: 'fa-building', label: 'Salaried' },
+                { icon: 'fa-briefcase', label: 'Self-Employed' },
+                { icon: 'fa-store', label: 'Business Owner' }
+            ];
+            addBotContent(`<div class="quick-actions">${opts.map(o => `<button class="action-btn" onclick="selectOption('${o.label}','employment')"><i class="fas ${o.icon}"></i>${o.label}</button>`).join('')}</div>`);
+        }
+
+        function showTenureOptions() {
+            addBotContent(`<div class="quick-actions">${[12, 24, 36, 48, 60].map(t => `<button class="action-btn" onclick="selectOption('${t}','tenure')">${t} months</button>`).join('')}</div>`);
+        }
+
+        function selectOption(value, stage) {
+            AppState.conversationStage = stage;
+            handleUserInput(value);
+        }
+
+        async function showLoanSummary() {
+            const { income, amount, tenure } = AppState.loan;
+            addBotContent(`
+                <div class="summary-card">
+                    <h5>📋 Application Summary</h5>
+                    <div class="summary-grid">
+                        <div class="summary-item"><div class="value">₹${income.toLocaleString('en-IN')}</div><div class="label">Income</div></div>
+                        <div class="summary-item"><div class="value">₹${amount.toLocaleString('en-IN')}</div><div class="label">Loan</div></div>
+                        <div class="summary-item"><div class="value">${tenure}mo</div><div class="label">Tenure</div></div>
+                    </div>
+                </div>
+            `);
+        }
+
+        async function checkEligibility() {
+            showTyping();
+            const result = await MockAPI.checkEligibility(AppState.loan.income, AppState.loan.amount);
+            hideTyping();
+
+            if (!result.eligible) {
+                addBotContent(`<div class="error-message"><i class="fas fa-exclamation-circle"></i><div class="content"><h5>Not Eligible</h5><p>${result.reason}</p></div></div>`);
+                await addBotMessage("Try a different amount?", 500);
+                addBotContent(`<div class="quick-actions"><button class="action-btn primary" onclick="retryEligibility()"><i class="fas fa-redo"></i>Try Again</button></div>`);
+                return;
+            }
+
+            addBotContent(`
+                <div class="inline-card">
+                    <div class="card-header success">
+                        <div class="card-icon"><i class="fas fa-check"></i></div>
+                        <div class="card-title"><h4>✅ Eligible!</h4><p>You qualify for a personal loan</p></div>
+                    </div>
+                </div>
+            `);
+
+            updateProgress(3);
+            await addBotMessage("Now upload your documents for KYC:", 600);
+            showDocumentUpload();
+            AppState.conversationStage = 'documents';
+        }
+
+        function retryEligibility() {
+            AppState.conversationStage = 'loanAmount';
+            addBotMessage("Enter new loan amount:");
+        }
+
+        function showDocumentUpload() {
+            const docs = [
+                { type: 'pan', label: 'PAN Card', icon: 'fa-id-card', done: AppState.documents.pan },
+                { type: 'aadhaar', label: 'Aadhaar Card', icon: 'fa-address-card', done: AppState.documents.aadhaar },
+                { type: 'income', label: 'Salary Slip', icon: 'fa-file-invoice', done: AppState.documents.income }
+            ];
+            const pending = docs.filter(d => !d.done);
+            if (!pending.length) { verifyDocuments(); return; }
+
+            const current = pending[0];
+            const uploadId = 'upload_' + Date.now();
+            const inputId = 'fileInput_' + Date.now();
+            
+            const group = document.createElement('div');
+            group.className = 'message-group bot';
+            group.innerHTML = `
+                <div class="message-row">
+                    <div class="avatar"><i class="fas fa-robot"></i></div>
+                    <div style="flex: 1; max-width: calc(100% - 52px);">
+                        <div class="upload-area" id="${uploadId}" data-doc="${current.type}">
+                            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                            <h4>Upload ${current.label}</h4>
+                            <p>Drag & drop or click to browse (PDF, JPG, PNG)</p>
+                        </div>
+                        <input type="file" id="${inputId}" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+                        ${docs.map(d => `
+                            <div class="doc-card">
+                                <div class="doc-icon"><i class="fas ${d.icon}"></i></div>
+                                <div class="doc-info"><h5>${d.label}</h5><p>${d.done ? 'Uploaded ✓' : 'Pending'}</p></div>
+                                <div class="doc-status ${d.done ? 'success' : 'pending'}"><i class="fas ${d.done ? 'fa-check-circle' : 'fa-clock'}"></i></div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            chatArea.appendChild(group);
+            scrollToBottom();
+            
+            // Set up listeners after DOM is updated
+            requestAnimationFrame(() => {
+                const area = document.getElementById(uploadId);
+                const input = document.getElementById(inputId);
+                
+                if (area && input) {
+                    area.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        input.click();
+                    });
+                    
+                    area.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        area.classList.add('dragover');
+                    });
+                    
+                    area.addEventListener('dragleave', (e) => {
+                        e.preventDefault();
+                        area.classList.remove('dragover');
+                    });
+                    
+                    area.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        area.classList.remove('dragover');
+                        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                            handleFileUpload(e.dataTransfer.files[0], area.dataset.doc);
+                        }
+                    });
+                    
+                    input.addEventListener('change', (e) => {
+                        if (e.target.files && e.target.files[0]) {
+                            handleFileUpload(e.target.files[0], area.dataset.doc);
+                        }
+                    });
+                }
+            });
+        }
+
+        async function handleFileUpload(file, docType) {
+            const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                await addBotMessage("❌ Please upload PDF, JPG or PNG files only.");
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                await addBotMessage("❌ File size must be less than 5MB.");
+                return;
+            }
+            addUserMessage(`📎 ${file.name}`);
+            showTyping();
+            const result = await MockAPI.uploadDocument(docType);
+            hideTyping();
+            AppState.documents[docType] = file;
+
+            if (result.success) {
+                if (docType === 'pan') { AppState.ocr.panName = result.data.name; AppState.ocr.panNumber = result.data.number; }
+                else if (docType === 'aadhaar') { AppState.ocr.aadhaarName = result.data.name; AppState.ocr.aadhaarNumber = result.data.number; }
+
+                await addBotMessage(`✅ ${docType.toUpperCase()} verified!`);
+                
+                if (docType === 'pan' || docType === 'aadhaar') {
+                    addBotContent(`
+                        <div class="ocr-card">
+                            <div class="ocr-header"><i class="fas fa-search"></i>OCR Extraction</div>
+                            <div class="ocr-row"><span class="ocr-field">Name</span><span class="ocr-value">${result.data.name} <i class="fas fa-check-circle match"></i></span></div>
+                            <div class="ocr-row"><span class="ocr-field">Number</span><span class="ocr-value">${docType === 'pan' ? maskPAN(result.data.number) : result.data.number} <i class="fas fa-check-circle match"></i></span></div>
+                        </div>
+                    `);
+                }
+
+                if (AppState.documents.pan && AppState.documents.aadhaar && AppState.documents.income) {
+                    await MockAPI.delay(600);
+                    await verifyDocuments();
+                } else {
+                    await MockAPI.delay(400);
+                    showDocumentUpload();
+                }
+            }
+        }
+
+        async function verifyDocuments() {
+            await addBotMessage("All documents received! Running checks...");
+            updateProgress(4);
+
+            addBotContent(`
+                <div class="loading-card" id="verificationLoader">
+                    <div class="loading-spinner"></div>
+                    <h4>Credit & Underwriting Check</h4>
+                    <p>This takes 30-60 seconds</p>
+                    <div class="loading-steps">
+                        <div class="loading-step active" id="step1"><i class="fas fa-spinner fa-spin"></i><span>Document authenticity...</span></div>
+                        <div class="loading-step" id="step2"><i class="far fa-circle"></i><span>Credit bureau check...</span></div>
+                        <div class="loading-step" id="step3"><i class="far fa-circle"></i><span>Underwriting engine...</span></div>
+                        <div class="loading-step" id="step4"><i class="far fa-circle"></i><span>Generating decision...</span></div>
+                    </div>
+                </div>
+            `);
+
+            await runVerificationSteps();
+        }
+
+        async function runVerificationSteps() {
+            const steps = ['step1', 'step2', 'step3', 'step4'];
+            for (let i = 0; i < steps.length; i++) {
+                await MockAPI.delay(1200);
+                const cur = document.getElementById(steps[i]);
+                if (cur) {
+                    cur.classList.remove('active');
+                    cur.classList.add('completed');
+                    cur.innerHTML = `<i class="fas fa-check-circle"></i><span>${cur.querySelector('span').textContent.replace('...', ' ✓')}</span>`;
+                }
+                if (i === 1) AppState.credit = await MockAPI.getCreditScore();
+                if (i < steps.length - 1) {
+                    const next = document.getElementById(steps[i + 1]);
+                    if (next) { next.classList.add('active'); next.innerHTML = `<i class="fas fa-spinner fa-spin"></i><span>${next.querySelector('span').textContent}</span>`; }
+                }
+            }
+
+            const result = await MockAPI.runUnderwriting(AppState.credit, AppState.loan);
+            document.getElementById('verificationLoader')?.remove();
+            await showDecision(result);
+        }
+
+        async function showDecision(result) {
+            updateProgress(5);
+            AppState.conversationStage = 'decision';
+
+            addBotContent(`
+                <div class="inline-card">
+                    <div class="card-header info">
+                        <div class="card-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="card-title"><h4>Credit Score: ${AppState.credit.score}</h4><p>Risk: ${AppState.credit.riskBand}</p></div>
+                    </div>
+                </div>
+            `);
+
+            await MockAPI.delay(600);
+
+            if (!result.success) {
+                await addBotMessage("Application reviewed...");
+                addBotContent(`
+                    <div class="inline-card">
+                        <div class="card-header error">
+                            <div class="card-icon"><i class="fas fa-times"></i></div>
+                            <div class="card-title"><h4>Not Approved</h4><p>${result.reason}</p></div>
+                        </div>
+                        <div class="card-actions"><button class="btn btn-outline" onclick="requestCallback()"><i class="fas fa-phone"></i>Request Callback</button></div>
+                    </div>
+                `);
+                return;
+            }
+
+            AppState.decision = result;
+            await addBotMessage("🎉 <strong>Congratulations!</strong> Loan Approved!");
+
+            const { approvedAmount, interestRate, tenure, emi, processingFee } = result;
+            addBotContent(`
+                <div class="inline-card">
+                    <div class="card-header success">
+                        <div class="card-icon"><i class="fas fa-trophy"></i></div>
+                        <div class="card-title"><h4>Loan Approved!</h4><p>Congrats, ${AppState.user.name.split(' ')[0]}!</p></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-row"><span class="card-label">Amount</span><span class="card-value highlight">₹${approvedAmount.toLocaleString('en-IN')}</span></div>
+                        <div class="card-row"><span class="card-label">Interest</span><span class="card-value">${interestRate}% p.a.</span></div>
+                        <div class="card-row"><span class="card-label">Tenure</span><span class="card-value">${tenure} months</span></div>
+                        <div class="card-row"><span class="card-label">EMI</span><span class="card-value">₹${emi.toLocaleString('en-IN')}</span></div>
+                        <div class="card-row"><span class="card-label">Processing Fee</span><span class="card-value">₹${processingFee.toLocaleString('en-IN')}</span></div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" onclick="downloadSanctionLetter()"><i class="fas fa-file-pdf"></i>Download Sanction Letter</button>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-success" onclick="acceptOffer()"><i class="fas fa-check"></i>Accept</button>
+                        <button class="btn btn-outline" onclick="negotiateOffer()"><i class="fas fa-comments"></i>Negotiate</button>
+                    </div>
+                </div>
+            `);
+        }
+
+        function downloadSanctionLetter() {
+            addUserMessage("📄 Downloading...");
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const { approvedAmount, interestRate, tenure, emi, processingFee } = AppState.decision;
+
+            doc.setFillColor(79, 70, 229);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255);
+            doc.setFontSize(22);
+            doc.setFont(undefined, 'bold');
+            doc.text('SecureFinance', 20, 22);
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'normal');
+            doc.text('Sanction Letter', 20, 32);
+
+            doc.setTextColor(0);
+            let y = 55;
+            doc.setFontSize(11);
+            doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 20, y);
+            y += 15;
+            doc.setFont(undefined, 'bold');
+            doc.text('Applicant:', 20, y);
+            doc.setFont(undefined, 'normal');
+            y += 7;
+            doc.text(`${AppState.user.name}`, 20, y);
+            y += 6;
+            doc.text(`${AppState.user.email}`, 20, y);
+            y += 6;
+            doc.text(`${AppState.user.mobile}`, 20, y);
+
+            y += 15;
+            doc.setFont(undefined, 'bold');
+            doc.text('Loan Details:', 20, y);
+            doc.setFont(undefined, 'normal');
+            y += 7;
+            doc.text(`Amount: Rs. ${approvedAmount.toLocaleString('en-IN')}`, 20, y);
+            y += 6;
+            doc.text(`Interest: ${interestRate}% p.a.`, 20, y);
+            y += 6;
+            doc.text(`Tenure: ${tenure} months`, 20, y);
+            y += 6;
+            doc.text(`EMI: Rs. ${emi.toLocaleString('en-IN')}`, 20, y);
+            y += 6;
+            doc.text(`Processing Fee: Rs. ${processingFee.toLocaleString('en-IN')}`, 20, y);
+
+            y += 20;
+            doc.setFontSize(9);
+            doc.setTextColor(100);
+            doc.text('This is a system-generated sanction letter.', 20, y);
+
+            doc.save(`SecureFinance_Sanction_${AppState.user.name.replace(/\s/g, '_')}.pdf`);
+            setTimeout(() => addBotMessage("✅ Downloaded! Review and accept to proceed."), 500);
+        }
+
+        async function acceptOffer() {
+            addUserMessage("I accept ✓");
+            showTyping();
+            await MockAPI.delay(1000);
+            hideTyping();
+            await addBotMessage("🎉 Excellent! Disbursement within 24 hours!");
+            const nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            addBotContent(`
+                <div class="summary-card" style="background: linear-gradient(135deg, var(--success), var(--teal));">
+                    <h5>🎯 What's Next</h5>
+                    <div class="summary-grid">
+                        <div class="summary-item"><div class="value">24h</div><div class="label">Disbursement</div></div>
+                        <div class="summary-item"><div class="value">5th ${nextMonth.toLocaleString('en-IN', { month: 'short' })}</div><div class="label">First EMI</div></div>
+                        <div class="summary-item"><div class="value">1800-XXX</div><div class="label">Support</div></div>
+                    </div>
+                </div>
+            `);
+            await addBotMessage("Thank you for choosing SecureFinance! 🙏", 500);
+        }
+
+        async function negotiateOffer() {
+            addUserMessage("I'd like to negotiate");
+            showTyping();
+            await MockAPI.delay(800);
+            hideTyping();
+            await addBotMessage("Sure! A specialist will call you in 30 mins.");
+            addBotContent(`<div class="quick-actions"><button class="action-btn" onclick="requestCallback()"><i class="fas fa-phone"></i>Schedule Call</button><button class="action-btn primary" onclick="acceptOffer()"><i class="fas fa-check"></i>Accept Current</button></div>`);
+        }
+
+        async function requestCallback() {
+            addUserMessage("Request callback");
+            showTyping();
+            await MockAPI.delay(600);
+            hideTyping();
+            await addBotMessage(`✅ Scheduled! We'll call ${AppState.user.mobile} in 30 mins.`);
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        sendBtn.addEventListener('click', () => handleUserInput(userInput.value));
+        userInput.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); handleUserInput(userInput.value); } });
+        attachBtn.addEventListener('click', () => {
+            if (AppState.conversationStage !== 'documents') { 
+                addBotMessage("📎 Upload is available during the document verification step."); 
+                return; 
+            }
+            // Find the current upload area
+            const uploadAreas = document.querySelectorAll('[id^="upload_"]');
+            const currentArea = uploadAreas[uploadAreas.length - 1];
+            const docType = currentArea?.dataset.doc || 'pan';
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.jpg,.jpeg,.png';
+            input.onchange = e => {
+                if (e.target.files && e.target.files[0]) {
+                    handleFileUpload(e.target.files[0], docType);
+                }
+            };
+            input.click();
+        });
+
+        // ==================== INIT ====================
+        document.addEventListener('DOMContentLoaded', () => setTimeout(startConversation, 400));
+    </script>
+</body>
+</html>
